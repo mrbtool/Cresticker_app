@@ -1,1 +1,748 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Name Sticker</title>
+<meta name="description" content="Name Sticker: design name stickers and labels, then print them on A4 sheets or save them as PDF.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8F%B7%EF%B8%8F%3C/text%3E%3C/svg%3E">
 
+<!--
+  HOW TO USE
+  1. Edit the CONFIG block near the bottom of this file (app name, developer, email, website).
+  2. Upload this file as index.html to any web host.
+  3. Each tab has its own link, so you can use them inside the app:
+       https://your-site.com/#about
+       https://your-site.com/#faq
+       https://your-site.com/#privacy
+       https://your-site.com/#terms
+       https://your-site.com/#feedback
+  NOTE: the Privacy Policy and Terms are a starting template. Have them reviewed
+  for your country before you publish the app.
+-->
+
+<style>
+  :root {
+    --bg1: #cfe3ff;
+    --bg2: #e6dbff;
+    --bg3: #cdf4ea;
+    --ink: #1e2a3a;
+    --muted: #5f6e84;
+    --accent: #0a6cff;
+    --accent2: #7a5cff;
+    --glass: rgba(255, 255, 255, 0.55);
+    --glass-strong: rgba(255, 255, 255, 0.78);
+    --stroke: rgba(255, 255, 255, 0.85);
+    --line: rgba(30, 42, 58, 0.12);
+    --shadow: 0 10px 30px rgba(40, 60, 110, 0.12);
+    --blob1: #9b7bff;
+    --blob2: #4da3ff;
+    --blob3: #5ee6c8;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg1: #0f1320;
+      --bg2: #16122b;
+      --bg3: #0d1f22;
+      --ink: #eef2f8;
+      --muted: #9aa7bb;
+      --accent: #5aa2ff;
+      --accent2: #9b86ff;
+      --glass: rgba(30, 36, 54, 0.55);
+      --glass-strong: rgba(30, 36, 54, 0.8);
+      --stroke: rgba(255, 255, 255, 0.14);
+      --line: rgba(255, 255, 255, 0.12);
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      --blob1: #5a3fd6;
+      --blob2: #1f5fc4;
+      --blob3: #138a76;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    color: var(--ink);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.65;
+    background: linear-gradient(135deg, var(--bg1), var(--bg2) 55%, var(--bg3));
+    background-attachment: fixed;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* soft colour blobs behind the glass */
+  .blob {
+    position: fixed;
+    z-index: -1;
+    width: 420px;
+    height: 420px;
+    border-radius: 50%;
+    filter: blur(70px);
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  .blob.a { background: var(--blob1); top: -140px; right: -120px; }
+  .blob.b { background: var(--blob2); top: 38%; left: -180px; }
+  .blob.c { background: var(--blob3); bottom: -160px; right: -100px; }
+
+  /* ---------- top tabs ---------- */
+  header.top {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    padding: 12px 14px 0;
+  }
+  .bar {
+    max-width: 980px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 10px 8px 16px;
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    border-radius: 999px;
+    box-shadow: var(--shadow);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+  }
+  .brand {
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .brand span { color: var(--accent); }
+  nav.tabs {
+    display: flex;
+    gap: 6px;
+    margin-left: auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+    padding: 2px;
+  }
+  nav.tabs::-webkit-scrollbar { display: none; }
+  nav.tabs a {
+    flex: 0 0 auto;
+    text-decoration: none;
+    color: var(--muted);
+    font-weight: 650;
+    font-size: 0.92rem;
+    padding: 9px 16px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  nav.tabs a:hover { color: var(--ink); background: rgba(127, 140, 170, 0.14); }
+  nav.tabs a[aria-current="page"] {
+    color: #fff;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    box-shadow: 0 6px 16px rgba(10, 108, 255, 0.3);
+  }
+
+  /* ---------- page ---------- */
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 28px 14px 60px;
+  }
+  .panel {
+    display: none;
+    animation: rise 0.28s ease both;
+  }
+  .panel.active { display: block; }
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+  }
+  noscript .panel { display: block; }
+
+  .card {
+    background: var(--glass);
+    border: 1px solid var(--stroke);
+    border-radius: 26px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    -webkit-backdrop-filter: blur(16px) saturate(150%);
+    backdrop-filter: blur(16px) saturate(150%);
+  }
+  .card + .card { margin-top: 18px; }
+
+  h1 {
+    font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+    line-height: 1.15;
+    margin: 0 0 10px;
+    letter-spacing: -0.5px;
+  }
+  h2 {
+    font-size: 1.25rem;
+    margin: 28px 0 8px;
+    letter-spacing: -0.2px;
+  }
+  h2:first-child { margin-top: 0; }
+  p { margin: 0 0 12px; }
+  ul, ol { margin: 0 0 12px; padding-left: 22px; }
+  li { margin-bottom: 6px; }
+  a { color: var(--accent); }
+  .muted { color: var(--muted); }
+  .small { font-size: 0.88rem; }
+
+  .pill {
+    display: inline-block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: rgba(10, 108, 255, 0.12);
+    padding: 6px 12px;
+    border-radius: 999px;
+    margin-bottom: 14px;
+  }
+
+  /* about */
+  .hero { text-align: left; }
+  .hero p.lead { font-size: 1.1rem; color: var(--muted); max-width: 640px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+  .feature {
+    background: var(--glass-strong);
+    border: 1px solid var(--stroke);
+    border-radius: 20px;
+    padding: 18px;
+  }
+  .feature .ico {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    display: grid;
+    place-items: center;
+    font-size: 1.3rem;
+    background: linear-gradient(135deg, rgba(10, 108, 255, 0.18), rgba(122, 92, 255, 0.18));
+    margin-bottom: 10px;
+  }
+  .feature h3 { margin: 0 0 4px; font-size: 1.02rem; }
+  .feature p { margin: 0; color: var(--muted); font-size: 0.93rem; }
+
+  .steps { counter-reset: s; list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+  .steps li {
+    counter-increment: s;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin: 0;
+  }
+  .steps li::before {
+    content: counter(s);
+    flex: 0 0 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+  }
+
+  /* faq */
+  details {
+    background: var(--glass-strong);
+    border: 1px solid var(--stroke);
+    border-radius: 18px;
+    padding: 0 18px;
+    margin-bottom: 10px;
+  }
+  summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 16px 0;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  summary::-webkit-details-marker { display: none; }
+  summary::after {
+    content: "+";
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--accent);
+    transition: transform 0.2s;
+  }
+  details[open] summary::after { transform: rotate(45deg); }
+  details .ans { padding: 0 0 16px; color: var(--muted); }
+
+  /* legal */
+  .legal h2 { border-top: 1px solid var(--line); padding-top: 22px; }
+  .legal h2:first-of-type { border-top: 0; padding-top: 0; }
+  .updated { color: var(--muted); font-size: 0.9rem; margin-bottom: 18px; }
+  .note {
+    background: rgba(10, 108, 255, 0.1);
+    border: 1px solid rgba(10, 108, 255, 0.25);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin: 14px 0;
+    font-size: 0.93rem;
+  }
+
+  /* feedback */
+  form { display: grid; gap: 14px; margin-top: 16px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  label { font-weight: 650; font-size: 0.92rem; display: block; margin-bottom: 6px; }
+  input, select, textarea {
+    width: 100%;
+    font: inherit;
+    color: var(--ink);
+    background: var(--glass-strong);
+    border: 1px solid var(--stroke);
+    border-radius: 14px;
+    padding: 12px 14px;
+    outline: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(10, 108, 255, 0.2);
+  }
+  textarea { min-height: 150px; resize: vertical; }
+  .btn {
+    justify-self: start;
+    border: 0;
+    cursor: pointer;
+    font: inherit;
+    font-weight: 750;
+    color: #fff;
+    padding: 13px 26px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    box-shadow: 0 8px 20px rgba(10, 108, 255, 0.3);
+  }
+  .btn:active { transform: translateY(1px); }
+  .contact-line {
+    margin-top: 18px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--glass-strong);
+    border: 1px solid var(--stroke);
+  }
+  #formMsg { min-height: 1.2em; font-size: 0.92rem; color: var(--muted); }
+
+  footer {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 14px 40px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+
+  @media (max-width: 640px) {
+    .bar { border-radius: 26px; flex-direction: column; align-items: stretch; gap: 6px; padding: 10px; }
+    .brand { text-align: center; }
+    nav.tabs { margin-left: 0; justify-content: flex-start; }
+    .card { padding: 20px; border-radius: 22px; }
+    .row2 { grid-template-columns: 1fr; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .panel { animation: none; }
+  }
+</style>
+</head>
+<body>
+<div class="blob a"></div>
+<div class="blob b"></div>
+<div class="blob c"></div>
+
+<header class="top">
+  <div class="bar">
+    <a class="brand" href="#about"><span data-fill="appName">Name Sticker</span></a>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#about" data-tab="about">About</a>
+      <a href="#faq" data-tab="faq">FAQ</a>
+      <a href="#privacy" data-tab="privacy">Privacy Policy</a>
+      <a href="#terms" data-tab="terms">Terms of Service</a>
+      <a href="#feedback" data-tab="feedback">Feedback</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= ABOUT ================= -->
+  <section class="panel" id="about" data-title="About">
+    <div class="card hero">
+      <span class="pill">Android app</span>
+      <h1><span data-fill="appName">Name Sticker</span>: make name labels in minutes</h1>
+      <p class="lead">Design clean, colourful name stickers and labels on your phone, put them on a printable A4 sheet, and print them or save them as a PDF. No design skills needed.</p>
+
+      <div class="grid">
+        <div class="feature">
+          <div class="ico">✍️</div>
+          <h3>Text with your own fonts</h3>
+          <p>Choose from the font list or import any .ttf / .otf font. Change size, colour and outline.</p>
+        </div>
+        <div class="feature">
+          <div class="ico">🖼️</div>
+          <h3>Stickers and shapes</h3>
+          <p>Add stickers from the app or your gallery, plus lines, circles, stars, hearts, arrows and more. Resize them by dragging the corner dots.</p>
+        </div>
+        <div class="feature">
+          <div class="ico">🎨</div>
+          <h3>Colours, gradients and borders</h3>
+          <p>Solid colours, ready-made gradients with an angle slider, background images, and borders with their own corner radius.</p>
+        </div>
+        <div class="feature">
+          <div class="ico">📐</div>
+          <h3>Smart alignment</h3>
+          <p>Guide lines and a small vibration help you line up texts, stickers and shapes perfectly.</p>
+        </div>
+        <div class="feature">
+          <div class="ico">📄</div>
+          <h3>Papers (A4 sheets)</h3>
+          <p>Save each sticker onto a named paper. Every paper holds 8 stickers and shows up as a page you can swipe.</p>
+        </div>
+        <div class="feature">
+          <div class="ico">🖨️</div>
+          <h3>Print or save as PDF</h3>
+          <p>Tap a page to select it (blue tick), then print or save only the pages you chose.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>How it works</h2>
+      <ol class="steps">
+        <li><div><strong>Design.</strong> Add a name, pick a font, then add stickers, shapes, colours or a background.</div></li>
+        <li><div><strong>Save.</strong> Tap <em>Save</em> and choose a paper name. Use <em>Draft</em> to keep unfinished work.</div></li>
+        <li><div><strong>Arrange.</strong> Open <em>My Stickers</em> and swipe through your papers. Delete a sticker or a whole paper any time.</div></li>
+        <li><div><strong>Print.</strong> Tap the pages you want, then choose <em>Print</em> or <em>Save PDF</em>.</div></li>
+      </ol>
+    </div>
+
+    <div class="card">
+      <h2>About the developer</h2>
+      <p><span data-fill="appName">Name Sticker</span> is made by <strong data-fill="developer">Your Name</strong>. We keep the app simple, fast and respectful of your privacy. Your designs stay on your device.</p>
+      <p class="muted small">Questions or ideas? Open the <a href="#feedback">Feedback</a> tab or email <a data-fill="emailLink" href="#">support@example.com</a>.</p>
+    </div>
+  </section>
+
+  <!-- ================= FAQ ================= -->
+  <section class="panel" id="faq" data-title="FAQ">
+    <div class="card">
+      <span class="pill">Help</span>
+      <h1>Frequently asked questions</h1>
+      <p class="muted">Quick answers about creating, saving and printing your stickers.</p>
+
+      <div style="margin-top:18px">
+        <details>
+          <summary>How do I make my first name sticker?</summary>
+          <div class="ans">Open the <strong>Content</strong> tab and tap <strong>Text</strong>, type a name and press <strong>Add to canvas</strong>. Drag it where you want it. Use the <strong>Text</strong> tab to change size, colour, stroke and font.</div>
+        </details>
+        <details>
+          <summary>Why can’t I save my sticker?</summary>
+          <div class="ans">Saving needs an active internet connection (Wi-Fi or mobile data), because the app is supported by ads. Saving is also blocked while <strong>Private DNS</strong> is set to a provider hostname. Turn Private DNS off in your phone’s network settings, then try again.</div>
+        </details>
+        <details>
+          <summary>What is the difference between Save and Draft?</summary>
+          <div class="ans"><strong>Save</strong> puts the finished sticker in <em>My Stickers</em>. <strong>Draft</strong> puts it in <em>Drafts</em>, a separate place for work in progress. Both ask which paper to save on.</div>
+        </details>
+        <details>
+          <summary>What is a paper?</summary>
+          <div class="ans">A paper is one named A4 sheet. When you save, you type a paper name (for example “Class 5 – Section A”). Stickers with the same paper name go on the same sheet, up to 8 per sheet. Each paper appears as a page you can swipe in <em>My Stickers</em>.</div>
+        </details>
+        <details>
+          <summary>How do I print or save selected pages as a PDF?</summary>
+          <div class="ans">Open <em>My Stickers</em> and tap a page. A blue tick shows it is selected. Tap more pages if you like, then choose <strong>Print</strong> or <strong>Save PDF</strong>. If no page is selected, all pages are used.</div>
+        </details>
+        <details>
+          <summary>How do I delete a sticker or a paper?</summary>
+          <div class="ans">Tap the red ✕ on a sticker (or long-press it) to delete just that sticker. Tap the red <strong>Delete</strong> chip at the top-left of a page to delete the whole paper.</div>
+        </details>
+        <details>
+          <summary>Can I use my own fonts?</summary>
+          <div class="ans">Yes. Open <strong>Text → Font</strong> and tap <strong>Import Font</strong>, then choose a .ttf or .otf file. The font is added to the list and stays available next time. Only import fonts you have the right to use.</div>
+        </details>
+        <details>
+          <summary>Can I use my own pictures as stickers or backgrounds?</summary>
+          <div class="ans">Yes. Tap <strong>Sticker</strong> or <strong>Image</strong> and choose <em>Choose from device</em>, or pick one of the images that come with the app. Use <strong>Img Size</strong> to resize a background and long-press the label to move it.</div>
+        </details>
+        <details>
+          <summary>How do I resize shapes and stickers?</summary>
+          <div class="ans">Tap the item to select it, then drag one of the corner dots. Shapes can be stretched freely, and stickers keep their proportions. You can also pinch with two fingers, or use the <strong>Size</strong> slider for shapes.</div>
+        </details>
+        <details>
+          <summary>How do I line things up perfectly?</summary>
+          <div class="ans">Drag an item near the centre or near the edges of other items. Pink guide lines appear, the item snaps into place and the phone vibrates briefly. You can also drag on empty space on the label to move the selected item without covering it with your finger.</div>
+        </details>
+        <details>
+          <summary>How do I change the order of items (layers)?</summary>
+          <div class="ans">Select an item, then use <strong>Forward</strong> or <strong>Backward</strong> in the Content tab to move it up or down one layer.</div>
+        </details>
+        <details>
+          <summary>Where are my stickers stored?</summary>
+          <div class="ans">Only on your phone, inside the app’s private storage. We do not upload them. If you uninstall the app or clear its data, they are deleted, so save your PDFs if you want a copy.</div>
+        </details>
+        <details>
+          <summary>Where is my PDF saved?</summary>
+          <div class="ans"><strong>Save PDF</strong> stores the file in the app’s Documents folder. To keep a copy somewhere else, use <strong>Print</strong> and choose “Save as PDF” in your phone’s print dialog.</div>
+        </details>
+        <details>
+          <summary>The keyboard hides my text box. What should I do?</summary>
+          <div class="ans">The typing area moves above the keyboard automatically. If it does not, close the keyboard and tap the text box again, and make sure your phone’s keyboard is up to date.</div>
+        </details>
+        <details>
+          <summary>How do I contact support?</summary>
+          <div class="ans">Open the <a href="#feedback">Feedback</a> tab, or email <a data-fill="emailLink" href="#">support@example.com</a>.</div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PRIVACY ================= -->
+  <section class="panel" id="privacy" data-title="Privacy Policy">
+    <div class="card legal">
+      <span class="pill">Legal</span>
+      <h1>Privacy Policy</h1>
+      <p class="updated">Last updated: <span data-fill="lastUpdated">October 25, 2026</span></p>
+
+      <p>This Privacy Policy explains how <strong data-fill="appName">Name Sticker</strong> (“the app”, “we”, “us”) handles information when you use the app. We designed the app so that your work stays on your device.</p>
+
+      <h2>1. Information we do not collect</h2>
+      <ul>
+        <li>We do not ask you to create an account or sign in.</li>
+        <li>We do not collect your name, email address, phone number or location.</li>
+        <li>We do not upload your stickers, drafts, photos, fonts or PDFs to our servers.</li>
+      </ul>
+
+      <h2>2. Information stored on your device</h2>
+      <p>The following stays only on your device, inside the app’s private storage:</p>
+      <ul>
+        <li>stickers and drafts you save (as images), grouped by paper name;</li>
+        <li>fonts you import;</li>
+        <li>small preferences, such as the last paper name you used.</li>
+      </ul>
+      <p>You can delete this data at any time inside the app, or by clearing the app’s data or uninstalling it.</p>
+
+      <h2>3. Pictures and files you choose</h2>
+      <p>When you add a sticker, background image or font from your device, you pick the file yourself using Android’s file picker. The app reads only the file you choose, and only to use it in your design. We do not scan or collect your other files.</p>
+
+      <h2>4. Advertising</h2>
+      <p>The app shows ads provided by <strong>Google AdMob</strong>. To show and measure ads, Google and its partners may collect and use certain information from your device, such as your advertising ID, IP address, device and app information, and how you interact with ads. This is handled by Google under its own privacy policy, not by us.</p>
+      <ul>
+        <li>Google’s information about how it uses data from apps that use its services: <a href="https://policies.google.com/technologies/partner-sites" target="_blank" rel="noopener">policies.google.com/technologies/partner-sites</a></li>
+        <li>You can reset your advertising ID or opt out of personalised ads in your phone’s settings (Settings → Privacy → Ads, or Settings → Google → Ads).</li>
+      </ul>
+
+      <h2>5. Network and device checks</h2>
+      <p>Before saving a sticker, the app checks whether your phone has an internet connection and whether Private DNS is switched on. This check is done on your device only and the result is not sent to us. The app also uses a short vibration for alignment feedback.</p>
+
+      <h2>6. Permissions</h2>
+      <ul>
+        <li><strong>Internet</strong> and <strong>network state</strong>: to load ads and to check your connection.</li>
+        <li><strong>Vibration</strong>: to give a short buzz when items snap into alignment.</li>
+      </ul>
+
+      <h2>7. Sharing of information</h2>
+      <p>We do not sell your personal information. The only third party that receives data through the app is the advertising provider described above. We may disclose information if required by law.</p>
+
+      <h2>8. Printing and PDF files</h2>
+      <p>When you print or save a PDF, the file is created on your device. If you choose a printer or share a PDF with another app, that service’s own privacy terms apply.</p>
+
+      <h2>9. Data retention and deletion</h2>
+      <p>We keep nothing on our servers, so there is nothing for us to delete. Your saved data lives on your device until you delete it or uninstall the app.</p>
+
+      <h2>10. Children’s privacy</h2>
+      <p>The app is a general-audience design tool and is not directed at children under 13. We do not knowingly collect personal information from children. If you believe a child has provided personal information, contact us and we will help.</p>
+
+      <h2>11. Security</h2>
+      <p>Your designs are kept in the app’s private storage, which other apps cannot normally access. No method of storage is perfectly secure, so please keep your phone protected.</p>
+
+      <h2>12. Your choices and rights</h2>
+      <p>Depending on where you live, you may have rights over your personal data (for example access, correction or deletion). Because we do not collect personal data ourselves, these requests mostly concern the advertising provider, which you can manage through your device’s ad settings.</p>
+
+      <h2>13. Changes to this policy</h2>
+      <p>We may update this policy from time to time. The “Last updated” date above shows when it last changed. Continued use of the app after an update means you accept the new policy.</p>
+
+      <h2>14. Contact us</h2>
+      <p>Questions about this policy? Email <a data-fill="emailLink" href="#">support@example.com</a> or use the <a href="#feedback">Feedback</a> tab.</p>
+    </div>
+  </section>
+
+  <!-- ================= TERMS ================= -->
+  <section class="panel" id="terms" data-title="Terms of Service">
+    <div class="card legal">
+      <span class="pill">Legal</span>
+      <h1>Terms of Service</h1>
+      <p class="updated">Last updated: <span data-fill="lastUpdated">October 25, 2026</span></p>
+
+      <p>By downloading or using <strong data-fill="appName">Name Sticker</strong> (“the app”), you agree to these Terms of Service. If you do not agree, please do not use the app.</p>
+
+      <h2>1. Using the app</h2>
+      <p>The app lets you design name stickers and labels, arrange them on A4 sheets, and print them or save them as PDF files. You may use the app for personal, educational and business purposes, as long as you follow these terms and the law.</p>
+
+      <h2>2. Your content</h2>
+      <ul>
+        <li>You keep ownership of the designs you create.</li>
+        <li>You are responsible for the pictures, fonts, logos and text you add. Only use content you own or have permission to use.</li>
+        <li>Imported fonts must be used according to their license.</li>
+      </ul>
+
+      <h2>3. Acceptable use</h2>
+      <p>You agree not to use the app to create or share content that is unlawful, hateful, harassing, misleading, or that infringes someone else’s rights. You also agree not to copy, modify, reverse engineer or misuse the app.</p>
+
+      <h2>4. Advertising and internet requirement</h2>
+      <p>The app is free and supported by ads. To save a sticker or draft, the app requires an active internet connection and does not allow saving while Private DNS (with a provider hostname) is turned on. Trying to block or bypass ads may stop you from saving.</p>
+
+      <h2>5. Built-in content</h2>
+      <p>The app’s name, design, code and any images, stickers or backgrounds that come with it belong to the developer or its licensors. You may use the built-in stickers and backgrounds inside your own designs, but you may not resell or redistribute them on their own.</p>
+
+      <h2>6. Printing and PDF output</h2>
+      <p>Printed results depend on your printer, paper and settings. Colours and sizes on paper may differ slightly from what you see on screen. We do not guarantee an exact match.</p>
+
+      <h2>7. Saved data</h2>
+      <p>Your designs are stored on your device. If you uninstall the app, clear its data or lose your device, your saved stickers may be lost. Please save PDFs of anything important.</p>
+
+      <h2>8. Disclaimer of warranties</h2>
+      <p>The app is provided “as is” and “as available”, without warranties of any kind. We do not promise that the app will always work, be error-free, or be available at all times.</p>
+
+      <h2>9. Limitation of liability</h2>
+      <p>To the fullest extent allowed by law, we are not liable for any indirect, incidental or consequential damages, or for loss of data or profits, arising from your use of the app.</p>
+
+      <h2>10. Changes and termination</h2>
+      <p>We may change, suspend or stop the app, or update these terms, at any time. If you keep using the app after the terms change, you accept the new terms. You can stop using the app at any time by uninstalling it.</p>
+
+      <h2>11. Governing law</h2>
+      <p>These terms are governed by the laws of <strong data-fill="country">your country</strong>, without regard to conflict-of-law rules.</p>
+
+      <h2>12. Contact</h2>
+      <p>Questions about these terms? Email <a data-fill="emailLink" href="#">support@example.com</a> or use the <a href="#feedback">Feedback</a> tab.</p>
+    </div>
+  </section>
+
+  <!-- ================= FEEDBACK ================= -->
+  <section class="panel" id="feedback" data-title="Feedback">
+    <div class="card">
+      <span class="pill">We’d love to hear from you</span>
+      <h1>Feedback</h1>
+      <p class="muted">Found a bug, want a new feature, or just want to say hi? Send us a message. Pressing <strong>Send feedback</strong> opens your email app with everything filled in.</p>
+
+      <form id="feedbackForm" novalidate>
+        <div class="row2">
+          <div>
+            <label for="fName">Your name</label>
+            <input id="fName" name="name" type="text" autocomplete="name" placeholder="Optional">
+          </div>
+          <div>
+            <label for="fEmail">Your email</label>
+            <input id="fEmail" name="email" type="email" autocomplete="email" placeholder="Optional, so we can reply">
+          </div>
+        </div>
+        <div>
+          <label for="fType">Type of feedback</label>
+          <select id="fType" name="type">
+            <option>Suggestion / new feature</option>
+            <option>Bug report</option>
+            <option>Question</option>
+            <option>Compliment</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div>
+          <label for="fMsg">Your message</label>
+          <textarea id="fMsg" name="message" placeholder="Tell us what happened or what you’d like to see. If it’s a bug, tell us your phone model and what you tapped."></textarea>
+        </div>
+        <p id="formMsg" role="status"></p>
+        <button class="btn" type="submit">Send feedback</button>
+      </form>
+
+      <div class="contact-line">
+        Prefer to write directly? Email us at <a data-fill="emailLink" href="#">support@example.com</a>.
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  © <span id="year"></span> <span data-fill="developer">Your Name</span>. All rights reserved.
+</footer>
+
+<script>
+  /* ===== EDIT THESE VALUES ===== */
+  const CONFIG = {
+    appName: "Name Sticker",
+    developer: "Your Name",
+    email: "support@example.com",
+    country: "your country",
+    lastUpdated: "October 25, 2026"
+  };
+  /* ============================= */
+
+  // fill placeholders
+  document.querySelectorAll("[data-fill]").forEach(function (el) {
+    var key = el.getAttribute("data-fill");
+    if (key === "emailLink") {
+      el.textContent = CONFIG.email;
+      el.setAttribute("href", "mailto:" + CONFIG.email);
+    } else if (CONFIG[key]) {
+      el.textContent = CONFIG[key];
+    }
+  });
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  // tab routing: #about, #faq, #privacy, #terms, #feedback
+  var panels = Array.prototype.slice.call(document.querySelectorAll(".panel"));
+  var tabs = Array.prototype.slice.call(document.querySelectorAll("nav.tabs a"));
+  var ids = panels.map(function (p) { return p.id; });
+
+  function show() {
+    var id = (location.hash || "").replace("#", "");
+    if (ids.indexOf(id) === -1) id = "about";
+    panels.forEach(function (p) { p.classList.toggle("active", p.id === id); });
+    tabs.forEach(function (t) {
+      if (t.getAttribute("data-tab") === id) t.setAttribute("aria-current", "page");
+      else t.removeAttribute("aria-current");
+    });
+    var active = document.getElementById(id);
+    document.title = active.getAttribute("data-title") + " | " + CONFIG.appName;
+    window.scrollTo(0, 0);
+    // keep the active tab visible in the scrolling tab bar on small screens
+    var cur = document.querySelector('nav.tabs a[aria-current="page"]');
+    if (cur && cur.scrollIntoView) cur.scrollIntoView({ inline: "center", block: "nearest" });
+  }
+  window.addEventListener("hashchange", show);
+  show();
+
+  // feedback form: opens the visitor's email app (no server needed)
+  document.getElementById("feedbackForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = document.getElementById("fName").value.trim();
+    var email = document.getElementById("fEmail").value.trim();
+    var type = document.getElementById("fType").value;
+    var msg = document.getElementById("fMsg").value.trim();
+    var note = document.getElementById("formMsg");
+    if (msg.length < 5) {
+      note.textContent = "Please write a short message first.";
+      document.getElementById("fMsg").focus();
+      return;
+    }
+    var subject = CONFIG.appName + " feedback: " + type;
+    var body = msg + "\n\n---\nName: " + (name || "-") + "\nEmail: " + (email || "-");
+    note.textContent = "Opening your email app…";
+    window.location.href = "mailto:" + CONFIG.email +
+      "?subject=" + encodeURIComponent(subject) +
+      "&body=" + encodeURIComponent(body);
+  });
+</script>
+</body>
+</html>
